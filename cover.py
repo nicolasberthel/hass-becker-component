@@ -22,6 +22,15 @@ from homeassistant.const import (
     STATE_OPEN,
 )
 
+from .const import (
+    DOMAIN,
+    CONF_COVERS,
+    CONF_CHANNEL,
+    CONF_DEVICE,
+    DEVICE_CLASS,
+    DEFAULT_CONF_USB_STICK_PATH
+)
+
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.exceptions import TemplateError
@@ -32,11 +41,7 @@ from pybecker.becker import Becker
 _LOGGER = logging.getLogger(__name__)
 
 COVER_FEATURES = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_OPEN_TILT | SUPPORT_CLOSE_TILT
-DEVICE_CLASS = "shutter"
 
-CONF_COVERS = "covers"
-CONF_CHANNEL = "channel"
-CONF_DEVICE = "device"
 
 _VALID_STATES = [STATE_OPEN, STATE_CLOSED, "true", "false"]
 
@@ -61,7 +66,14 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the becker platform."""
     covers = []
 
-    becker = Becker()
+    stick_path = config.get(CONF_DEVICE)
+    if not stick_path:
+        stick_path = DEFAULT_CONF_USB_STICK_PATH
+
+    becker = Becker(stick_path, True)
+    # To be sure the connexion is well established send 3 commands
+    for x in range(0, 2):
+        becker.stop("1")
 
     for device, device_config in config[CONF_COVERS].items():
         friendly_name = device_config.get(CONF_FRIENDLY_NAME, device)
@@ -160,7 +172,7 @@ class BeckerDevice(CoverDevice, RestoreEntity):
         await self._becker.stop(self._channel)
 
     async def async_update(self):
-        await super().async_update()
+        #await super().async_update()
         if self._template is not None:
             try:
                 state = self._template.async_render().lower()
