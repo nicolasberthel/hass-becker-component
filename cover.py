@@ -17,6 +17,8 @@ from homeassistant.components.cover import (
 from homeassistant.const import (
     CONF_FRIENDLY_NAME,
     CONF_VALUE_TEMPLATE,
+    CONF_DEVICE,
+    CONF_COVERS,
     EVENT_HOMEASSISTANT_START,
     STATE_CLOSED,
     STATE_OPEN,
@@ -24,9 +26,7 @@ from homeassistant.const import (
 
 from .const import (
     DOMAIN,
-    CONF_COVERS,
     CONF_CHANNEL,
-    CONF_DEVICE,
     DEVICE_CLASS,
     DEFAULT_CONF_USB_STICK_PATH
 )
