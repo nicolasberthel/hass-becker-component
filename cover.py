@@ -122,6 +122,11 @@ class BeckerDevice(CoverDevice, RestoreEntity):
         return self._name
 
     @property
+    def unique_id(self):
+        """Return the unique id of the device - the channel"""
+        return self._channel
+
+    @property
     def current_cover_position(self):
         """
         Return current position of cover.
