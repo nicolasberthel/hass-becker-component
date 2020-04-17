@@ -52,13 +52,15 @@ COVER_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_CHANNEL): cv.string,
-        vol.Optional(CONF_DEVICE): cv.string,
         vol.Optional(CONF_VALUE_TEMPLATE): cv.template,
     }
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required(CONF_COVERS): cv.schema_with_slug_keys(COVER_SCHEMA)}
+    {
+        vol.Required(CONF_COVERS): cv.schema_with_slug_keys(COVER_SCHEMA),
+        vol.Optional(CONF_DEVICE): cv.string,
+    }
 )
 
 
