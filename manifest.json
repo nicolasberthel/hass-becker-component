@@ -2,7 +2,7 @@
   "domain": "becker",
   "name": "Becker",
   "documentation": "",
-  "requirements": ["pybecker==1.0.1"],
+  "requirements": ["pybecker==1.0.2"],
   "dependencies": [],
   "codeowners": ["@nicolasberthel"]
 }
