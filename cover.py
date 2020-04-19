@@ -17,6 +17,8 @@ from homeassistant.components.cover import (
 from homeassistant.const import (
     CONF_FRIENDLY_NAME,
     CONF_VALUE_TEMPLATE,
+    CONF_DEVICE,
+    CONF_COVERS,
     EVENT_HOMEASSISTANT_START,
     STATE_CLOSED,
     STATE_OPEN,
@@ -24,9 +26,7 @@ from homeassistant.const import (
 
 from .const import (
     DOMAIN,
-    CONF_COVERS,
     CONF_CHANNEL,
-    CONF_DEVICE,
     DEVICE_CLASS,
     DEFAULT_CONF_USB_STICK_PATH
 )
@@ -52,13 +52,15 @@ COVER_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_CHANNEL): cv.string,
-        vol.Optional(CONF_DEVICE): cv.string,
         vol.Optional(CONF_VALUE_TEMPLATE): cv.template,
     }
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required(CONF_COVERS): cv.schema_with_slug_keys(COVER_SCHEMA)}
+    {
+        vol.Required(CONF_COVERS): cv.schema_with_slug_keys(COVER_SCHEMA),
+        vol.Optional(CONF_DEVICE): cv.string,
+    }
 )
 
 
@@ -120,6 +122,11 @@ class BeckerDevice(CoverDevice, RestoreEntity):
     def name(self):
         """Return the name of the device as reported by tellcore."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return the unique id of the device - the channel"""
+        return self._channel
 
     @property
     def current_cover_position(self):
