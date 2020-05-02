@@ -4,6 +4,8 @@ import logging
 
 from homeassistant.const import MATCH_ALL
 
+from .rf_device import PyBecker
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -56,3 +58,12 @@ def extract_entities(
         entity_ids = manual_entity_ids
 
     return entity_ids
+
+
+async def async_setup(hass, config):
+    """Setup the becker component"""
+
+    # Register this component's services
+    await PyBecker.async_register_services(hass)
+
+    return True
