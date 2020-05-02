@@ -12,7 +12,7 @@ from homeassistant.components.cover import (
     SUPPORT_OPEN,
     SUPPORT_STOP,
     SUPPORT_OPEN_TILT,
-    SUPPORT_CLOSE_TILT
+    SUPPORT_CLOSE_TILT,
 )
 from homeassistant.const import (
     CONF_FRIENDLY_NAME,
@@ -24,12 +24,7 @@ from homeassistant.const import (
     STATE_OPEN,
 )
 
-from .const import (
-    DOMAIN,
-    CONF_CHANNEL,
-    DEVICE_CLASS,
-    DEFAULT_CONF_USB_STICK_PATH
-)
+from .const import DOMAIN, CONF_CHANNEL, DEVICE_CLASS, DEFAULT_CONF_USB_STICK_PATH
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
@@ -40,7 +35,9 @@ from pybecker.becker import Becker
 
 _LOGGER = logging.getLogger(__name__)
 
-COVER_FEATURES = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_OPEN_TILT | SUPPORT_CLOSE_TILT
+COVER_FEATURES = (
+    SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_OPEN_TILT | SUPPORT_CLOSE_TILT
+)
 
 
 _VALID_STATES = [STATE_OPEN, STATE_CLOSED, "true", "false"]
@@ -82,16 +79,18 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         channel = device_config.get(CONF_CHANNEL)
         state_template = device_config.get(CONF_VALUE_TEMPLATE)
         if channel is None:
-            _LOGGER.error(
-                "Must specify %s", CONF_CHANNEL
-            )
+            _LOGGER.error("Must specify %s", CONF_CHANNEL)
             continue
         templates = {
             CONF_VALUE_TEMPLATE: state_template,
         }
         initialise_templates(hass, templates)
         entity_ids = extract_entities(device, "cover", None, templates)
-        covers.append(BeckerDevice(becker, friendly_name, int(channel), state_template, entity_ids))
+        covers.append(
+            BeckerDevice(
+                becker, friendly_name, int(channel), state_template, entity_ids
+            )
+        )
 
     async_add_entities(covers)
 
@@ -101,7 +100,7 @@ class BeckerDevice(CoverDevice, RestoreEntity):
     Representation of a Becker cover device.
     """
 
-    def __init__(self,  becker, name, channel, state_template, entity_ids, position=0):
+    def __init__(self, becker, name, channel, state_template, entity_ids, position=0):
         """Init the Becker device."""
         self._becker = becker
         self._name = name
@@ -179,7 +178,7 @@ class BeckerDevice(CoverDevice, RestoreEntity):
         await self._becker.stop(self._channel)
 
     async def async_update(self):
-        #await super().async_update()
+        # await super().async_update()
         if self._template is not None:
             try:
                 state = self._template.async_render().lower()
@@ -189,7 +188,11 @@ class BeckerDevice(CoverDevice, RestoreEntity):
                     else:
                         self._position = 0
                 else:
-                    _LOGGER.error("Received invalid cover is_on state: %s. Expected: %s", state, ", ".join(_VALID_STATES))
+                    _LOGGER.error(
+                        "Received invalid cover is_on state: %s. Expected: %s",
+                        state,
+                        ", ".join(_VALID_STATES),
+                    )
                     self._position = None
             except TemplateError as ex:
                 _LOGGER.error(ex)
