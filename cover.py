@@ -24,14 +24,13 @@ from homeassistant.const import (
     STATE_OPEN,
 )
 
-from .const import DOMAIN, CONF_CHANNEL, DEVICE_CLASS, DEFAULT_CONF_USB_STICK_PATH
+from .const import DOMAIN, CONF_CHANNEL, DEVICE_CLASS
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.exceptions import TemplateError
 from . import extract_entities, initialise_templates
-
-from pybecker.becker import Becker
+from .rf_device import PyBecker
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,13 +65,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     covers = []
 
     stick_path = config.get(CONF_DEVICE)
-    if not stick_path:
-        stick_path = DEFAULT_CONF_USB_STICK_PATH
+    PyBecker.setup(stick_path)
 
-    becker = Becker(stick_path, True)
     # To be sure the connexion is well established send 3 commands
     for x in range(0, 2):
-        becker.stop("1")
+        PyBecker.becker.stop("1")
 
     for device, device_config in config[CONF_COVERS].items():
         friendly_name = device_config.get(CONF_FRIENDLY_NAME, device)
@@ -88,7 +85,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         entity_ids = extract_entities(device, "cover", None, templates)
         covers.append(
             BeckerDevice(
-                becker, friendly_name, int(channel), state_template, entity_ids
+                PyBecker.becker, friendly_name, int(channel), state_template, entity_ids
             )
         )
 
