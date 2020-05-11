@@ -3,10 +3,9 @@
 import logging
 
 import voluptuous as vol
-
 from pybecker.becker import Becker
 
-from .const import DOMAIN, DEFAULT_CONF_USB_STICK_PATH, CONF_CHANNEL, CONF_UNIT
+from .const import CONF_CHANNEL, CONF_UNIT, DEFAULT_CONF_USB_STICK_PATH, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class PyBecker:
 
     @classmethod
     def setup(cls, stick_path=None):
-        """Setup becker instance."""
+        """Initiate becker instance."""
 
         if not stick_path:
             stick_path = DEFAULT_CONF_USB_STICK_PATH
@@ -34,7 +33,7 @@ class PyBecker:
 
     @classmethod
     async def async_register_services(cls, hass):
-        """Registers component services."""
+        """Register component services."""
 
         hass.services.async_register(DOMAIN, "pair", cls.handle_pair, PAIR_SCHEMA)
         hass.services.async_register(DOMAIN, "log_units", cls.handle_log_units)
@@ -55,7 +54,7 @@ class PyBecker:
         # Apparently the SQLite results are implicitly returned in unit id
         # order. This seems pretty dirty to rely on.
         unit_id = 1
-        _LOGGER.info("Configured Becker centronix units:")
+        _LOGGER.info("Configured Becker centronic units:")
         for row in units:
             unit_code, increment = row[0:2]
             _LOGGER.info(

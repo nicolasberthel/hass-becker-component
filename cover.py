@@ -5,31 +5,29 @@ import logging
 import voluptuous as vol
 
 from homeassistant.components.cover import (
-    ATTR_POSITION,
-    CoverDevice,
     PLATFORM_SCHEMA,
     SUPPORT_CLOSE,
-    SUPPORT_OPEN,
-    SUPPORT_STOP,
-    SUPPORT_OPEN_TILT,
     SUPPORT_CLOSE_TILT,
+    SUPPORT_OPEN,
+    SUPPORT_OPEN_TILT,
+    SUPPORT_STOP,
+    CoverDevice,
+    CoverEntity,
 )
 from homeassistant.const import (
+    CONF_COVERS,
+    CONF_DEVICE,
     CONF_FRIENDLY_NAME,
     CONF_VALUE_TEMPLATE,
-    CONF_DEVICE,
-    CONF_COVERS,
-    EVENT_HOMEASSISTANT_START,
     STATE_CLOSED,
     STATE_OPEN,
 )
-
-from .const import DOMAIN, CONF_CHANNEL, DEVICE_CLASS
-
+from homeassistant.exceptions import TemplateError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.exceptions import TemplateError
+
 from . import extract_entities, initialise_templates
+from .const import CONF_CHANNEL, DEVICE_CLASS
 from .rf_device import PyBecker
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,8 +65,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     stick_path = config.get(CONF_DEVICE)
     PyBecker.setup(stick_path)
 
-    # To be sure the connexion is well established send 3 commands
-    for x in range(0, 2):
+    for init_call_count in range(0, 2):
+        _LOGGER.debug("Init call to cover channel 1 #%d" % init_call_count)
         PyBecker.becker.stop("1")
 
     for device, device_config in config[CONF_COVERS].items():
@@ -92,10 +90,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(covers)
 
 
-class BeckerDevice(CoverDevice, RestoreEntity):
-    """
-    Representation of a Becker cover device.
-    """
+class BeckerDevice(CoverEntity, RestoreEntity):
+    """Representation of a Becker cover device."""
 
     def __init__(self, becker, name, channel, state_template, entity_ids, position=0):
         """Init the Becker device."""
@@ -121,16 +117,12 @@ class BeckerDevice(CoverDevice, RestoreEntity):
 
     @property
     def unique_id(self):
-        """Return the unique id of the device - the channel"""
+        """Return the unique id of the device - the channel."""
         return self._channel
 
     @property
     def current_cover_position(self):
-        """
-        Return current position of cover.
-
-        None is unknown, 0 is closed, 100 is fully open.
-        """
+        """Return current position of cover. None is unknown, 0 is closed, 100 is fully open."""
         return self._position
 
     @property
@@ -175,7 +167,7 @@ class BeckerDevice(CoverDevice, RestoreEntity):
         await self._becker.stop(self._channel)
 
     async def async_update(self):
-        # await super().async_update()
+        """Update the position of the cover."""
         if self._template is not None:
             try:
                 state = self._template.async_render().lower()
