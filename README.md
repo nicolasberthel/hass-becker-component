@@ -19,19 +19,19 @@ Copy the different sources in custom_components folder of your hass configuratio
 Once installed you can add a new cover configuration in your HA configuration
 
 ```yaml
-cover:
-  - platform: becker
-    covers:
-      kitchen:
-        friendly_name: "Kitchen Cover"
-        channel: "1"
-      bedroom:
-        friendly_name: "Bedroom Cover"
-        channel: "2"
-        value_template: "{{ states('sensor.bedroom_sensor_value') | float > 22 }}"
+becker:
+  device: "/dev/serial/by-id/usb-BECKER-ANTRIEBE_GmbH_CDC_RS232_v125_Centronic-if00"
+  covers:
+    - name: "Kitchen Cover"
+      channel: "1"
+    - name: "Bedroom Cover"
+      channel: "2"
+      value_template: "{{ states('sensor.bedroom_sensor_value') | float > 22 }}"
 ```
 
 Note: The channel needs to be a string!
+
+The configuration of the centronic device can be done as well via the integration configuration screen
 
 ## Note
 
@@ -43,9 +43,9 @@ Of course you have to put your shutter in pairing mode before. This is generally
 pybecker -a PAIR -c <CHANNEL_ID>
 ```
 
-## TODO
+### EDIT
 
-* Find a solution to pair new shutters from HA (if you have ideas you are welcome)
+Thanks to [markbergsma](https://github.com/markbergsma) pairing is now possible from the UI, a script or an automation using the fresh new *becker.pair* service. This requires channel and a unit as parameter.
 
 ## Support
 
