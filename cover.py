@@ -27,7 +27,14 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import extract_entities, initialise_templates
-from .const import CONF_CHANNEL, DEVICE_CLASS
+from .const import (
+    CONF_CHANNEL,
+    DEVICE_CLASS,
+    CLOSED_POSITION,
+    OPEN_POSITION,
+    VENTILATION_POSITION,
+    INTERMEDIATE_POSITION,
+)
 from .rf_device import PyBecker
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,10 +44,13 @@ COVER_FEATURES = (
 )
 
 
-_VALID_STATES = [STATE_OPEN, STATE_CLOSED, "true", "false"]
+_VALID_STATES = [
+    STATE_OPEN,
+    STATE_CLOSED,
+    "true",
+    "false",
+]
 
-CLOSED_POSITION = 0
-OPEN_POSITION = 100
 
 COVER_SCHEMA = vol.Schema(
     {
@@ -148,6 +158,10 @@ class BeckerDevice(CoverEntity, RestoreEntity):
 
     async def async_open_cover_tilt(self, **kwargs):
         """Open the cover tilt."""
+        if self._position == CLOSED_POSITION:
+            self._position = VENTILATION_POSITION
+        elif self._position == VENTILATION_POSITION:
+            self._position = OPEN_POSITION
         await self._becker.move_up_intermediate(self._channel)
 
     async def async_close_cover(self, **kwargs):
@@ -158,10 +172,14 @@ class BeckerDevice(CoverEntity, RestoreEntity):
 
     async def async_close_cover_tilt(self, **kwargs):
         """Close the cover tilt."""
+        if self._position == OPEN_POSITION:
+            self._position = INTERMEDIATE_POSITION
+        elif self._position == INTERMEDIATE_POSITION:
+            self._position = CLOSED_POSITION
         await self._becker.move_down_intermediate(self._channel)
 
     async def async_stop_cover(self, **kwargs):
-        """Set the cover to the closed position."""
+        """Set the cover to the stopped position."""
         if self._template is None:
             self._position = 50
         await self._becker.stop(self._channel)
