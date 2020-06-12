@@ -11,7 +11,6 @@ from homeassistant.components.cover import (
     SUPPORT_OPEN,
     SUPPORT_OPEN_TILT,
     SUPPORT_STOP,
-    CoverDevice,
     CoverEntity,
 )
 from homeassistant.const import (
@@ -82,7 +81,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         initialise_templates(hass, templates)
         entity_ids = extract_entities(device, "cover", None, templates)
         covers.append(
-            BeckerDevice(
+            BeckerEntity(
                 PyBecker.becker, friendly_name, int(channel), state_template, entity_ids
             )
         )
@@ -90,8 +89,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(covers)
 
 
-class BeckerDevice(CoverEntity, RestoreEntity):
-    """Representation of a Becker cover device."""
+class BeckerEntity(CoverEntity, RestoreEntity):
+    """Representation of a Becker cover entity."""
 
     def __init__(self, becker, name, channel, state_template, entity_ids, position=0):
         """Init the Becker device."""
