@@ -5,6 +5,7 @@ from pybecker.becker import Becker
 import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_IMPORT
+from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import (
     CONF_CHANNEL,
@@ -39,9 +40,9 @@ async def async_setup_entry(hass, entry):
     becker = BeckerConnection(stick_path)
 
     if not becker:
-        return False
+    	raise ConfigEntryNotReady
 
-    for init_call_count in range(0, 2):
+    for init_call_count in range(2):
         _LOGGER.debug("Init call to cover channel 1 #%d" % init_call_count)
         await becker.connection.stop("1")
 
@@ -98,7 +99,7 @@ class BeckerConnection:
     async def handle_pair(self, call):
         """Service to pair with a cover receiver."""
 
-        channel = call.data.get(CONF_CHANNEL)
+        channel = call.data.[CONF_CHANNEL]
         unit = call.data.get(CONF_UNIT, 1)
         await self.connection.pair(f"{unit}:{channel}")
 
