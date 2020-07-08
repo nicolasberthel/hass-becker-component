@@ -74,7 +74,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     stick_path = config.get(CONF_DEVICE)
     PyBecker.setup(stick_path)
 
-    for init_call_count in range(0, 2):
+    for init_call_count in range(2):
         _LOGGER.debug("Init call to cover channel 1 #%d" % init_call_count)
         await PyBecker.becker.stop("1")
 
@@ -92,7 +92,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         entity_ids = extract_entities(device, "cover", None, templates)
         covers.append(
             BeckerEntity(
-                PyBecker.becker, friendly_name, int(channel), state_template, entity_ids
+                PyBecker.becker, friendly_name, channel, state_template, entity_ids
             )
         )
 
@@ -106,10 +106,11 @@ class BeckerEntity(CoverEntity, RestoreEntity):
         """Init the Becker device."""
         self._becker = becker
         self._name = name
-        self._channel = str(channel)
+        self._channel = channel
         self._template = state_template
         self._entities = entity_ids
         self._position = position
+        self._state = True
 
     async def async_added_to_hass(self):
         """Register callbacks."""
