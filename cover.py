@@ -410,12 +410,12 @@ class BeckerEntity(CoverEntity, RestoreEntity):
                 self._travel_stop()
             elif ((cmd_arg == COMMANDS['up_intermediate']) and
                   (self._cover_features & SUPPORT_OPEN_TILT)):
-                self._travel_up_intermediate(self)
+                self._travel_up_intermediate()
             elif command == COMMANDS['up']:
                 self._travel_to_position(OPEN_POSITION)
             elif ((cmd_arg == COMMANDS['down_intermediate']) and
                   (self._cover_features & SUPPORT_CLOSE_TILT)):
-                self._travel_down_intermediate(self)
+                self._travel_down_intermediate()
             elif command == COMMANDS['down']:
                 self._travel_to_position(CLOSED_POSITION)
 

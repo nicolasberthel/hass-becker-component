@@ -2,7 +2,7 @@
 
 import re
 
-from .pybecker.becker import (
+from pybecker.becker import (
     COMMAND_HALT,
     COMMAND_UP,
     COMMAND_UP5,
