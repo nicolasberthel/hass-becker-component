@@ -1,11 +1,13 @@
 """Handling of the Becker USB device."""
 
 import logging
+import os
 
 import voluptuous as vol
 from pybecker.becker import Becker
+from pybecker.database import FILE_PATH, SQL_DB_FILE
 
-from .const import CONF_CHANNEL, CONF_UNIT, DEFAULT_CONF_USB_STICK_PATH, DOMAIN
+from .const import CONF_CHANNEL, CONF_UNIT, DOMAIN, RECEIVE_MESSAGE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,13 +25,37 @@ class PyBecker:
     becker = None
 
     @classmethod
-    def setup(cls, stick_path=None):
+    def setup(cls, hass, device=None, filename=None):
         """Initiate becker instance."""
-
-        if not stick_path:
-            stick_path = DEFAULT_CONF_USB_STICK_PATH
-
-        cls.becker = Becker(stick_path, True)
+        # Validate filename
+        if filename is None:
+            filename = SQL_DB_FILE
+        if not os.path.isfile(filename):
+            file = os.path.basename(filename)
+            path = os.path.dirname(filename)
+            if path == '':
+                # file in HA config folder
+                if os.path.isfile(os.path.join(hass.config.config_dir, file)):
+                    filename = os.path.join(hass.config.config_dir, file)
+                # file in pybecker folder
+                elif os.path.isfile(os.path.join(FILE_PATH, file)):
+                    # move file to config folder once
+                    filename = os.path.join(hass.config.config_dir, file)
+                    _LOGGER.debug("Move file to %s", filename)
+                    os.rename(os.path.join(FILE_PATH, file), filename)
+                else:
+                    # create a new file in HA config folder
+                    _LOGGER.warning("Filename %s does not exist. Create a new file.", file)
+                    filename = os.path.join(hass.config.config_dir, file)
+            else:
+                assert os.path.exists(path), f"Path of filename {filename} invalid or does not exist!"
+                # create a new file
+                _LOGGER.warning("Filename %s does not exist. Create a new file.", filename)
+        _LOGGER.debug("Use filename: %s", filename)
+        # Setup callback function
+        callback = lambda packet: cls.callback(hass, packet)
+        # Setup Becker
+        cls.becker = Becker(device_name=device, init_dummy=False, db_filename=filename, callback=callback)
 
     @classmethod
     async def async_register_services(cls, hass):
@@ -61,3 +87,9 @@ class PyBecker:
                 "Unit id %d, unit code %s, increment %d", unit_id, unit_code, increment
             )
             unit_id += 1
+
+    @staticmethod
+    def callback(hass, packet):
+        """Handle Becker device callback for received packets."""
+        _LOGGER.debug("Received packet for dispatcher")
+        hass.helpers.dispatcher.dispatcher_send(f"{DOMAIN}.{RECEIVE_MESSAGE}", packet)
